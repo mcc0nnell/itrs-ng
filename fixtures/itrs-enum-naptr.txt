@@ -1,0 +1,9 @@
+# Synthetic public-shape fixtures for deterministic iTRS NG tests.
+# No live subscriber data or production iTRS records.
+
+# +18015551212 -> 2.1.2.1.5.5.5.1.0.8.1.itrs.us.
+2.1.2.1.5.5.5.1.0.8.1.itrs.us. IN NAPTR 10 11 "u" "E2U+sip" "!^(.*)$!sip:\1@providerGW.example.com!" .
+
+# Lower preference wins within the same order.
+2.1.2.1.5.5.5.2.0.2.1.itrs.us. IN NAPTR 10 10 "u" "E2U+sip" "!^.*$!sip:first@example.invalid!" .
+2.1.2.1.5.5.5.2.0.2.1.itrs.us. IN NAPTR 10 50 "u" "E2U+sip" "!^.*$!sip:second@example.invalid!" .

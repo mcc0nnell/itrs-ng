@@ -48,6 +48,7 @@ The local PSAP does not need to surrender the emergency call merely because the 
 ## Architecture
 
 - **Tilden Number** — identifier, authority, capability, reachability, policy, and provenance resolution.
+- **iTRS ENUM/NAPTR** — E.164 → `itrs.us` NAPTR → terminal `E2U+sip` resolution as a deterministic Number input.
 - **ASL resource registry** — live discovery of local, regional, or fallback ASL-capable resources.
 - **NG911 integration boundary** — complements ECRF/ESRP policy; does not replace geographic emergency routing.
 - **Media/session plane** — SIP, video, RTT, voice, and multi-party session establishment.
@@ -81,7 +82,7 @@ The first executable prototype demonstrates deterministic failover across:
 
 while preserving the geographically authoritative PSAP throughout the call.
 
-See [`docs/architecture.md`](docs/architecture.md) and [`spec/asl-resource-resolution.md`](spec/asl-resource-resolution.md).
+See [`docs/architecture.md`](docs/architecture.md), [`docs/enum-naptr.md`](docs/enum-naptr.md), and [`spec/asl-resource-resolution.md`](spec/asl-resource-resolution.md).
 
 ## Status
 

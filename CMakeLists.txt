@@ -5,7 +5,9 @@ option(ITRS_BUILD_TESTS "Build deterministic resolver tests" ON)
 option(ITRS_ENABLE_CELIX "Build the Celix Number application and synthetic resource bundles" OFF)
 set(ITRS_CELIX_SOURCE_DIR "" CACHE PATH "Optional Apache Celix source checkout used for an in-tree build")
 
-add_library(itrs_number_core STATIC src/number/resolver.c)
+add_library(itrs_number_core STATIC
+    src/number/resolver.c
+    src/number/enum.c)
 target_include_directories(itrs_number_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_features(itrs_number_core PUBLIC c_std_11)
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -15,6 +17,9 @@ endif()
 add_executable(itrs-number-demo examples/number_demo.c)
 target_link_libraries(itrs-number-demo PRIVATE itrs_number_core)
 
+add_executable(itrs-enum-demo examples/enum_demo.c)
+target_link_libraries(itrs-enum-demo PRIVATE itrs_number_core)
+
 if (ITRS_BUILD_TESTS)
     enable_testing()
     add_executable(itrs-number-core-test tests/number_resolver_test.c)
@@ -23,6 +28,13 @@ if (ITRS_BUILD_TESTS)
         target_compile_options(itrs-number-core-test PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
     add_test(NAME number-core COMMAND itrs-number-core-test)
+
+    add_executable(itrs-enum-test tests/enum_test.c)
+    target_link_libraries(itrs-enum-test PRIVATE itrs_number_core)
+    if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(itrs-enum-test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    add_test(NAME enum-core COMMAND itrs-enum-test)
 endif()
 
 if (ITRS_ENABLE_CELIX)

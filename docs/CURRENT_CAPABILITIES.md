@@ -25,3 +25,12 @@ The repository now contains an executable M0/M1 reference slice.
 - CTest regression suite;
 - three explicit failover demos;
 - documented WindAnvil immutable-object gate.
+
+## ENUM / NAPTR
+
+- E.164 normalization and 15-digit limit enforcement.
+- Reversed-digit ENUM keys beneath a configurable apex (`itrs.us` by default).
+- Deterministic terminal `E2U+sip` NAPTR processing with order/preference semantics.
+- POSIX ERE rewrite support with numeric backreferences.
+- Synthetic public-shape fixtures and executable tests.
+- DNS transport intentionally remains outside the deterministic core.

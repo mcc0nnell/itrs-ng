@@ -17,3 +17,9 @@ psap='authoritative_psap=psap-frederick <sip:psap-frederick@example.invalid>'
 [[ "$(grep -F "$psap" <<<"$local_down")" == "$psap" ]]
 [[ "$(grep -F "$psap" <<<"$both_down")" == "$psap" ]]
 echo "PASS: deterministic resolver, failover chain, and PSAP invariant"
+enum_one="$($build/itrs-enum-demo)"
+enum_two="$($build/itrs-enum-demo)"
+grep -q '^query=2\.1\.2\.1\.5\.5\.5\.1\.0\.8\.1\.itrs\.us\.$' <<<"$enum_one"
+grep -q '^uri=sip:+18015551212@providerGW\.example\.com$' <<<"$enum_one"
+[[ "$enum_one" == "$enum_two" ]]
+echo "PASS: deterministic iTRS ENUM/NAPTR rewrite and replay identity"

@@ -54,6 +54,28 @@ policy:
 
 The same service contract can be backed by a local deterministic registry, TRS-numbering data, synthetic test data, or another authorized source.
 
+### Historical iTRS ENUM seam
+
+Public FCC and IETF material shows the historical query seam as E.164/ENUM/NAPTR: normalize the telephone number, reverse its digits beneath `itrs.us`, query NAPTR, then apply a terminal `E2U+sip` rule to obtain a SIP URI. iTRS NG implements that as a deterministic input adapter to Number rather than hiding it inside signaling.
+
+```text
++18015551212
+      │
+      ▼
+2.1.2.1.5.5.5.1.0.8.1.itrs.us.
+      │ NAPTR
+      ▼
+   E2U+sip
+      │
+      ▼
+sip:+18015551212@providerGW.example.com
+      │
+      ▼
+Tilden Number endpoint observation
+```
+
+DNS transport and mutable live-zone state stay outside the deterministic core. The core accepts a frozen NAPTR snapshot so resolution can be replayed and assured independently. See [`enum-naptr.md`](enum-naptr.md).
+
 ## ASL emergency-resource resolution
 
 For emergency communications, Number can also resolve a service capability rather than only a subscriber destination.
