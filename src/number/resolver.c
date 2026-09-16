@@ -139,6 +139,11 @@ int itrs_number_resolve(const itrs_number_request_t *request,
     copy_string(result->authoritative_psap_endpoint, sizeof(result->authoritative_psap_endpoint), request->authoritative_psap_endpoint);
     copy_string(result->resource_snapshot, sizeof(result->resource_snapshot), request->resource_snapshot);
     copy_string(result->policy_version, sizeof(result->policy_version), request->policy_version);
+    result->access_context_present = request->has_access_context;
+    if (request->has_access_context) {
+        result->access_context_valid = itrs_access_context_is_valid(&request->access_context);
+        if (result->access_context_valid) result->access_context = request->access_context;
+    }
     result->candidate_count = resource_count;
 
     for (size_t i = 0; i < resource_count; ++i) {

@@ -5,9 +5,17 @@ option(ITRS_BUILD_TESTS "Build deterministic resolver tests" ON)
 option(ITRS_ENABLE_CELIX "Build the Celix Number application and synthetic resource bundles" OFF)
 set(ITRS_CELIX_SOURCE_DIR "" CACHE PATH "Optional Apache Celix source checkout used for an in-tree build")
 
+add_library(itrs_access_core STATIC src/access/context.c)
+target_include_directories(itrs_access_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(itrs_access_core PUBLIC c_std_11)
+if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(itrs_access_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_library(itrs_number_core STATIC src/number/resolver.c)
 target_include_directories(itrs_number_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_features(itrs_number_core PUBLIC c_std_11)
+target_link_libraries(itrs_number_core PUBLIC itrs_access_core)
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(itrs_number_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
@@ -74,6 +82,14 @@ if (ITRS_ENABLE_CELIX)
         SOURCES celix/src/number_bundle.c)
     target_link_libraries(itrs_number_bundle PRIVATE itrs_number_core itrs_number_service_api)
 
+    add_celix_bundle(itrs_access_fixture_bundle
+        VERSION 1.0.0
+        SYMBOLIC_NAME org_itrsng_fixture_access_identity
+        NAME "iTRS NG synthetic Access Identity"
+        FILENAME itrs_access_fixture
+        SOURCES celix/src/access_fixture_bundle.c)
+    target_link_libraries(itrs_access_fixture_bundle PRIVATE itrs_access_core itrs_number_service_api)
+
     add_celix_bundle(itrs_resource_fixture_bundle
         VERSION 1.0.0
         SYMBOLIC_NAME org_itrsng_fixture_asl_resources
@@ -92,6 +108,7 @@ if (ITRS_ENABLE_CELIX)
 
     add_celix_container(itrs-ng-celix-demo COPY BUNDLES
         itrs_number_bundle
+        itrs_access_fixture_bundle
         itrs_resource_fixture_bundle
         itrs_smoke_consumer_bundle)
 endif()

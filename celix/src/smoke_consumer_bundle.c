@@ -23,8 +23,15 @@ static void use_number(void *handle CELIX_UNUSED, void *svc) {
     snprintf(req.policy_version, sizeof(req.policy_version), "baseline-v1");
     itrs_number_result_t result;
     int rc = number->resolve(number->handle, &req, &result);
-    printf("ITRS_NG_CELIX_SMOKE rc=%d psap=%s selected=%s candidates=%zu\n",
-           rc, result.authoritative_psap_id, result.selected ? result.selected_id : "none", result.candidate_count);
+    printf("ITRS_NG_CELIX_SMOKE rc=%d psap=%s selected=%s candidates=%zu access_present=%s access_valid=%s access_profile=%s access_attachment=%s\n",
+           rc,
+           result.authoritative_psap_id,
+           result.selected ? result.selected_id : "none",
+           result.candidate_count,
+           result.access_context_present ? "true" : "false",
+           result.access_context_valid ? "true" : "false",
+           result.access_context_valid ? result.access_context.profile_state : "unknown",
+           result.access_context_valid ? result.access_context.attachment : "unknown");
     fflush(stdout);
 }
 
