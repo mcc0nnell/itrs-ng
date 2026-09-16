@@ -1,5 +1,7 @@
 #pragma once
 
+#include "itrsng/access.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -55,6 +57,8 @@ typedef struct itrs_number_request {
     char authoritative_psap_endpoint[ITRS_NUMBER_URI_MAX];
     char resource_snapshot[ITRS_NUMBER_ID_MAX];
     char policy_version[ITRS_NUMBER_ID_MAX];
+    bool has_access_context;
+    itrs_access_context_t access_context;
 } itrs_number_request_t;
 
 typedef struct itrs_number_candidate {
@@ -76,6 +80,9 @@ typedef struct itrs_number_result {
     char authoritative_psap_endpoint[ITRS_NUMBER_URI_MAX];
     char resource_snapshot[ITRS_NUMBER_ID_MAX];
     char policy_version[ITRS_NUMBER_ID_MAX];
+    bool access_context_present;
+    bool access_context_valid;
+    itrs_access_context_t access_context;
     bool selected;
     char selected_id[ITRS_NUMBER_ID_MAX];
     char selected_endpoint[ITRS_NUMBER_URI_MAX];
@@ -89,9 +96,13 @@ typedef struct itrs_number_result {
  * Resolve an accessibility resource from an immutable snapshot.
  *
  * The authoritative PSAP fields are copied from request to result unchanged.
+ * Access context is optional evidence: malformed or missing access context does
+ * not fail Number resolution and cannot select or replace the PSAP. A valid
+ * context is copied to the result for provenance but does not expand an
+ * otherwise unauthorized capability.
  * Resource ordering is deterministic and independent of input array order.
- * Returns 0 on success, EINVAL for invalid input, or EOVERFLOW when resource
- * count exceeds ITRS_NUMBER_MAX_CANDIDATES.
+ * Returns 0 on success, EINVAL for invalid authoritative input, or EOVERFLOW
+ * when resource count exceeds ITRS_NUMBER_MAX_CANDIDATES.
  */
 int itrs_number_resolve(const itrs_number_request_t *request,
                         const itrs_asl_resource_t *resources,
