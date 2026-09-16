@@ -27,32 +27,45 @@ For an ASL video emergency call, the target model is:
 ```text
 Deaf caller
     │
-    │ video / SIP / NG911
+    │ device / network access
+    ▼
+Access Identity ── eSIM / carrier / IMS observations
+    │
+    │ typed, privacy-minimized context
+    ▼
+Tilden Number
+    │
+    ├──────── iTRS NG accessibility resolution
+    │
     ▼
 Local PSAP ──────────────── incident + dispatch authority
     │
-    └── iTRS NG accessibility resolution
-              │
-              ▼
-         Tilden Number
-              │
-       ┌──────┼─────────┐
-       ▼      ▼         ▼
-     local  regional  interpreter/
-     ASL      ASL       VRS fallback
-     rep      pool
+    ├── local ASL resource
+    ├── regional ASL resource
+    └── interpreter / VRS fallback
 ```
 
 The local PSAP does not need to surrender the emergency call merely because the caller communicates in ASL. The accessibility resource can be discovered and joined as another participant in the session.
 
+Access Identity is deliberately non-authoritative: eSIM or carrier observations can inform Tilden resolution, but they do not select the PSAP, create number authority, or prove that a communications modality is usable.
+
 ## Architecture
 
+- **Access Identity** — privacy-minimized observation of device/network access, including eSIM-backed cellular state; never numbering or NG911 authority.
 - **Tilden Number** — identifier, authority, capability, reachability, policy, and provenance resolution.
 - **ASL resource registry** — live discovery of local, regional, or fallback ASL-capable resources.
 - **NG911 integration boundary** — complements ECRF/ESRP policy; does not replace geographic emergency routing.
 - **Media/session plane** — SIP, video, RTT, voice, and multi-party session establishment.
 - **Policy + provenance** — deterministic selection with an auditable explanation of why a resource was eligible and selected.
 - **Celix runtime** — small replaceable services with dynamic discovery and a path to distributed execution.
+
+The access seam preserves a simple three-stage claim boundary:
+
+```text
+Access Identity: access observed
+Tilden Number:   capability authorized / resolved
+Baudot:          communication behavior observed / proven
+```
 
 ## First proof
 
@@ -64,7 +77,9 @@ The first concrete prototype should demonstrate deterministic failover across:
 
 while preserving the geographically authoritative PSAP throughout the call.
 
-See [`docs/architecture.md`](docs/architecture.md) and [`spec/asl-resource-resolution.md`](spec/asl-resource-resolution.md).
+The access-identity slice should replay that resolution under active/home, roaming, inactive, absent, and unknown eSIM/access states without allowing those states to suppress or replace the authoritative emergency-routing result.
+
+See [`docs/architecture.md`](docs/architecture.md), [`docs/access-identity.md`](docs/access-identity.md), [`spec/asl-resource-resolution.md`](spec/asl-resource-resolution.md), and [`spec/access-identity.md`](spec/access-identity.md).
 
 ## Status
 
