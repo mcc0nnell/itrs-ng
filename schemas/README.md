@@ -1,7 +1,9 @@
-# iTRS NG schemas
+# Schemas
 
-Machine-readable schemas for iTRS NG resolution objects and protocol structures live here.
+Machine-readable contracts for the first iTRS NG reference slice:
 
-- [`asl-resource.schema.json`](asl-resource.schema.json) — ASL-capable communication-resource advertisement used by the first emergency-resource resolver prototype.
+- `asl-resource.schema.json` — an ASL-capable resource advertisement;
+- `resolution-request.schema.json` — immutable request context including the authoritative PSAP;
+- `resolution-result.schema.json` — selected resource plus all evaluated candidates and reasons.
 
-Schemas should encode transport-neutral semantics where possible. Registry, federation, Celix service discovery, and wire transport are separate implementation concerns.
+The C MVP uses fixed-size structures with equivalent semantics so a resolver call can be allocation-free across the Celix service boundary.

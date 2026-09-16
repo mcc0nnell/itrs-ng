@@ -1,0 +1,44 @@
+{
+  "snapshot": "fixture-v1",
+  "resources": [
+    {
+      "id": "asl-local",
+      "endpoint": "sip:asl-local@example.invalid",
+      "language": "ASL",
+      "media": ["video", "rtt"],
+      "role": "telecommunicator",
+      "scope": {"kind": "local", "jurisdiction": ["US-MD-FREDERICK"]},
+      "services": ["urn:service:sos"],
+      "state": "available",
+      "priority": 100,
+      "dispatch_authority": false,
+      "authority": {"source": "synthetic-test-registry", "version": "fixture-v1"}
+    },
+    {
+      "id": "asl-regional",
+      "endpoint": "sip:asl-regional@example.invalid",
+      "language": "ASL",
+      "media": ["video", "rtt"],
+      "role": "telecommunicator",
+      "scope": {"kind": "regional", "jurisdiction": ["US-MD"]},
+      "services": ["urn:service:sos"],
+      "state": "available",
+      "priority": 90,
+      "dispatch_authority": false,
+      "authority": {"source": "synthetic-test-registry", "version": "fixture-v1"}
+    },
+    {
+      "id": "vrs-bridge",
+      "endpoint": "sip:vrs-bridge@example.invalid",
+      "language": "ASL",
+      "media": ["video"],
+      "role": "bridge",
+      "scope": {"kind": "national", "jurisdiction": ["US"]},
+      "services": ["urn:service:sos"],
+      "state": "available",
+      "priority": 10,
+      "dispatch_authority": false,
+      "authority": {"source": "synthetic-test-registry", "version": "fixture-v1"}
+    }
+  ]
+}

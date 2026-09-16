@@ -1,6 +1,6 @@
 # ASL emergency resource resolution
 
-Status: initial design sketch.
+Status: executable MVP implemented; policy and wire formats remain pre-standardization.
 
 ## Purpose
 

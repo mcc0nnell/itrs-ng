@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://itrs-ng.example.invalid/schemas/resolution-request.schema.json",
+  "title": "iTRS NG accessibility resolution request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "service", "language", "media", "jurisdiction_path", "authoritative_psap", "resource_snapshot", "policy_version"],
+  "properties": {
+    "request_id": {"type": "string", "minLength": 1},
+    "service": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "minLength": 1},
+    "media": {"type": "string", "minLength": 1},
+    "jurisdiction_path": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "authoritative_psap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "endpoint"],
+      "properties": {"id": {"type": "string", "minLength": 1}, "endpoint": {"type": "string", "minLength": 1}}
+    },
+    "resource_snapshot": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "string", "minLength": 1}
+  }
+}

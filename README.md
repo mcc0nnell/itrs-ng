@@ -54,9 +54,26 @@ The local PSAP does not need to surrender the emergency call merely because the 
 - **Policy + provenance** — deterministic selection with an auditable explanation of why a resource was eligible and selected.
 - **Celix runtime** — small replaceable services with dynamic discovery and a path to distributed execution.
 
+## Quick start
+
+```bash
+./scripts/validate.sh
+```
+
+The validation builds with warnings as errors, runs the deterministic resolver tests, exercises the local/regional/bridge failover chain, and checks that the authoritative PSAP is unchanged in all three runs.
+
+To compile the Celix application against a pinned Apache Celix checkout:
+
+```bash
+cmake -S . -B build-celix -DITRS_ENABLE_CELIX=ON -DITRS_CELIX_SOURCE_DIR=/path/to/apache-celix
+cmake --build build-celix --parallel
+```
+
+See [`docs/CURRENT_CAPABILITIES.md`](docs/CURRENT_CAPABILITIES.md), [`ROADMAP.md`](ROADMAP.md), and [`docs/windanvil.md`](docs/windanvil.md).
+
 ## First proof
 
-The first concrete prototype should demonstrate deterministic failover across:
+The first executable prototype demonstrates deterministic failover across:
 
 1. local ASL telecommunicator;
 2. regional ASL emergency resource;
