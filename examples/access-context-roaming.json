@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "observation_id": "access-roaming-001",
+  "observed_at": "2026-09-16T21:45:00Z",
+  "source": {
+    "kind": "synthetic",
+    "authority": "windanvil-lab"
+  },
+  "access": {
+    "transport": "cellular",
+    "profile_state": "active",
+    "attachment": "roaming",
+    "ims_state": "registered"
+  },
+  "capabilities": [
+    {
+      "name": "voice",
+      "state": "available",
+      "basis": "synthetic"
+    },
+    {
+      "name": "rtt",
+      "state": "available",
+      "basis": "synthetic"
+    },
+    {
+      "name": "video",
+      "state": "unknown",
+      "basis": "unknown"
+    }
+  ],
+  "emergency": {
+    "access_state": "unknown"
+  }
+}
