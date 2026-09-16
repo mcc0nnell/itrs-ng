@@ -16,6 +16,44 @@ Emergency ingress
       └── communication capability ────► iTRS NG ────────────► ASL / RTT / video resource
 ```
 
+## Access Identity
+
+Device and carrier state enters iTRS NG through a separate **Access Identity** service. eSIM/eUICC, carrier attachment, roaming, and IMS observations belong here rather than inside Number.
+
+```text
+device / carrier edge
+        │
+        │ eSIM / network observations
+        ▼
+ Access Identity
+        │ access-context@1
+        │ typed + provenance-bearing
+        ▼
+   Tilden Number
+```
+
+Access Identity is deliberately weaker than an authority service. It reports what was observed and where the observation came from. It does not create an E.164 ownership claim, authorize a Tilden endpoint, select a PSAP, or prove live media readiness.
+
+The current architecture preserves the earlier Tilden invariant:
+
+```text
+NUMBER != NETWORK
+```
+
+The same communication identity can remain stable while the observed access edge changes from home cellular to roaming, Wi-Fi, no active profile, or an unknown state.
+
+For emergency use, missing or negative access context must not become an accidental gate:
+
+```text
+location / service context ─────────────► NG911 authority ─► PSAP
+
+access observation ─► Access Identity ─► Tilden Number ───► accessibility resources
+```
+
+Access state can improve a resolution decision, but failure of Access Identity does not suppress the authoritative emergency path and does not erase already-known accessibility requirements.
+
+See [`access-identity.md`](access-identity.md) and [`../spec/access-identity.md`](../spec/access-identity.md).
+
 ## Tilden Number
 
 Tilden survives inside iTRS NG as the numbering and capability-resolution subsystem. **Number is a standalone Celix application**, not a helper library hidden inside signaling.
@@ -52,7 +90,7 @@ policy:
   emergency_capable: true
 ```
 
-The same service contract can be backed by a local deterministic registry, TRS-numbering data, synthetic test data, or another authorized source.
+The same service contract can be backed by a local deterministic registry, TRS-numbering data, synthetic test data, or another authorized source. Access Identity is one optional provenance-bearing input; it cannot expand an otherwise unauthorized binding.
 
 ## ASL emergency-resource resolution
 
@@ -83,9 +121,15 @@ Selection remains subject to the PSAP/NG911 policy domain. Number supplies typed
 
 ## Live Celix services
 
-ASL resources can advertise themselves as dynamic services:
+Access state and ASL resources can both be modeled as small Celix services with different authority levels:
 
 ```text
+itrs.access.identity
+  access.transport = cellular
+  profile.state    = active
+  attachment       = roaming
+
+
 tilden.asl.resource
   jurisdiction = MD
   media        = video
@@ -94,7 +138,7 @@ tilden.asl.resource
   state        = available
 ```
 
-A resolver can combine static authority data with live service state. That makes failover deterministic while still reacting to availability.
+A resolver can combine authorized static bindings with live service state and non-authoritative access context. That makes failover deterministic while still reacting to availability.
 
 ## Session model
 
@@ -112,7 +156,7 @@ The local PSAP remains the incident owner. iTRS NG helps attach the communicatio
 
 ## Distributed execution
 
-The service boundary is intentionally compatible with Celix Remote Service Admin and the project's MessagePack DFI work. A caller should not care whether a Number resolver or ASL resource is in-process, on another host, or supplied by a federated service.
+The service boundary is intentionally compatible with Celix Remote Service Admin and the project's MessagePack DFI work. A caller should not care whether an Access Identity observer, Number resolver, or ASL resource is in-process, on another host, or supplied by a federated service.
 
 ```text
 consumer
@@ -131,6 +175,7 @@ Every resolution should be reproducible from explicit inputs and policy. A decis
 - normalized identifier or requested service;
 - authoritative PSAP context;
 - requested modality and language;
+- access-context observation and freshness when one was used;
 - candidate resources;
 - eligibility and policy results;
 - selected resource;
@@ -140,9 +185,17 @@ Every resolution should be reproducible from explicit inputs and policy. A decis
 
 This lets the system answer not only **where did the call go?** but **why was this communication resource selected?**
 
+The evidence chain must keep three claims separate:
+
+```text
+Access Identity: access observed
+Tilden Number:   capability authorized / resolved
+Baudot:          communication behavior observed / proven
+```
+
 ## Non-goals
 
-iTRS NG is not intended to become a replacement numbering administrator, ECRF, ESRP, CAD system, PSAP, or carrier network. Its job is to make cross-system accessibility capabilities resolvable, interoperable, policy-qualified, and auditable.
+iTRS NG is not intended to become a replacement numbering administrator, eSIM provisioning system, carrier IMS, ECRF, ESRP, CAD system, PSAP, or carrier network. Its job is to make cross-system accessibility capabilities resolvable, interoperable, policy-qualified, and auditable.
 
 ## First prototype
 
@@ -150,10 +203,11 @@ Build a synthetic environment containing:
 
 1. simulated emergency ingress;
 2. deterministic location-to-PSAP result;
-3. Celix Tilden Number service;
-4. live ASL-resource registry;
-5. local, regional, and fallback resources;
-6. three-party video/session joining;
-7. evidence showing each candidate and selection decision.
+3. Celix Access Identity service with home, roaming, inactive, absent, and unknown fixtures;
+4. Celix Tilden Number service;
+5. live ASL-resource registry;
+6. local, regional, and fallback resources;
+7. three-party video/session joining;
+8. evidence showing access observations, each candidate, the selection decision, and communications readiness separately.
 
-The acceptance test is failover from **local ASL telecommunicator → regional ASL resource → interpreter/VRS fallback** without changing the authoritative local PSAP.
+The acceptance test is failover from **local ASL telecommunicator → regional ASL resource → interpreter/VRS fallback** without changing the authoritative local PSAP. The same PSAP result must survive every access fixture, including absent or unknown eSIM state.
