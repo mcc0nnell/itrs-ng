@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "iTRS NG Access Context",
+  "description": "Privacy-minimized observation of device/network access state supplied to iTRS NG as non-authoritative context.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "observation_id", "observed_at", "source", "access", "emergency"],
+  "properties": {
+    "version": {"const": 1},
+    "observation_id": {"type": "string", "minLength": 1},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "authority"],
+      "properties": {
+        "kind": {"enum": ["device-os", "carrier-adapter", "synthetic", "other"]},
+        "authority": {"type": "string", "minLength": 1}
+      }
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport"],
+      "properties": {
+        "transport": {"enum": ["cellular", "wifi", "ethernet", "other", "unknown"]},
+        "profile_state": {"enum": ["active", "inactive", "absent", "unknown"]},
+        "attachment": {"enum": ["home", "roaming", "detached", "unknown"]},
+        "ims_state": {"enum": ["registered", "unregistered", "unknown"]}
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "state", "basis"],
+        "properties": {
+          "name": {"enum": ["voice", "rtt", "video", "text", "data"]},
+          "state": {"enum": ["available", "unavailable", "unknown"]},
+          "basis": {"enum": ["advertised", "observed", "configured", "synthetic", "unknown"]}
+        }
+      }
+    },
+    "emergency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["access_state"],
+      "properties": {
+        "access_state": {"enum": ["available", "unavailable", "unknown"]}
+      }
+    }
+  }
+}
