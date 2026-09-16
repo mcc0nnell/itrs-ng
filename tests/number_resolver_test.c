@@ -37,6 +37,24 @@ static itrs_number_request_t request(void) {
     return req;
 }
 
+static itrs_access_context_t access_context(const char *profile, const char *attachment, const char *ims) {
+    itrs_access_context_t ctx = {0};
+    snprintf(ctx.observation_id, sizeof(ctx.observation_id), "access-test-001");
+    snprintf(ctx.observed_at, sizeof(ctx.observed_at), "2026-09-16T21:45:00Z");
+    snprintf(ctx.source_kind, sizeof(ctx.source_kind), "synthetic");
+    snprintf(ctx.source_authority, sizeof(ctx.source_authority), "windanvil-test");
+    snprintf(ctx.transport, sizeof(ctx.transport), "cellular");
+    snprintf(ctx.profile_state, sizeof(ctx.profile_state), "%s", profile);
+    snprintf(ctx.attachment, sizeof(ctx.attachment), "%s", attachment);
+    snprintf(ctx.ims_state, sizeof(ctx.ims_state), "%s", ims);
+    snprintf(ctx.emergency_access_state, sizeof(ctx.emergency_access_state), "unknown");
+    ctx.capability_count = 1;
+    snprintf(ctx.capabilities[0].name, sizeof(ctx.capabilities[0].name), "rtt");
+    snprintf(ctx.capabilities[0].state, sizeof(ctx.capabilities[0].state), "available");
+    snprintf(ctx.capabilities[0].basis, sizeof(ctx.capabilities[0].basis), "synthetic");
+    return ctx;
+}
+
 static void baseline(itrs_asl_resource_t out[3]) {
     out[0] = make_resource("local", "telecommunicator", "local", "US-MD-FREDERICK", "available", 100);
     out[1] = make_resource("regional", "telecommunicator", "regional", "US-MD", "available", 90);
@@ -52,6 +70,7 @@ static int test_local_selected(void) {
     CHECK(strcmp(result.selected_id, "local") == 0);
     CHECK(strcmp(result.authoritative_psap_id, req.authoritative_psap_id) == 0);
     CHECK(strcmp(result.authoritative_psap_endpoint, req.authoritative_psap_endpoint) == 0);
+    CHECK(!result.access_context_present);
     return 0;
 }
 
@@ -120,7 +139,6 @@ static int test_no_eligible_candidate_is_explicit(void) {
     return 0;
 }
 
-
 static int test_malformed_resource_is_ineligible(void) {
     itrs_asl_resource_t resources[2];
     resources[0] = make_resource("malformed", "telecommunicator", "local", "US-MD-FREDERICK", "available", 1000);
@@ -152,6 +170,75 @@ static int test_capacity_fails_closed(void) {
     return 0;
 }
 
+static int test_access_state_does_not_move_psap_or_selection(void) {
+    static const struct {
+        const char *profile;
+        const char *attachment;
+        const char *ims;
+    } arms[] = {
+        {"active", "home", "registered"},
+        {"active", "roaming", "registered"},
+        {"inactive", "detached", "unregistered"},
+        {"absent", "unknown", "unknown"},
+        {"unknown", "unknown", "unknown"},
+    };
+
+    for (size_t i = 0; i < sizeof(arms) / sizeof(arms[0]); ++i) {
+        itrs_asl_resource_t resources[3]; baseline(resources);
+        itrs_number_request_t req = request();
+        req.has_access_context = true;
+        req.access_context = access_context(arms[i].profile, arms[i].attachment, arms[i].ims);
+        snprintf(req.access_context.observation_id, sizeof(req.access_context.observation_id), "access-arm-%zu", i);
+
+        itrs_number_result_t result;
+        CHECK(itrs_number_resolve(&req, resources, 3, &result) == 0);
+        CHECK(result.selected);
+        CHECK(strcmp(result.selected_id, "local") == 0);
+        CHECK(strcmp(result.authoritative_psap_id, "psap-frederick") == 0);
+        CHECK(strcmp(result.authoritative_psap_endpoint, "sip:psap-frederick@example.invalid") == 0);
+        CHECK(result.access_context_present);
+        CHECK(result.access_context_valid);
+        CHECK(strcmp(result.access_context.profile_state, arms[i].profile) == 0);
+    }
+    return 0;
+}
+
+static int test_malformed_access_context_is_nonfatal(void) {
+    itrs_asl_resource_t resources[3]; baseline(resources);
+    itrs_number_request_t req = request();
+    req.has_access_context = true;
+    memset(&req.access_context, 0, sizeof(req.access_context));
+
+    itrs_number_result_t result;
+    CHECK(itrs_number_resolve(&req, resources, 3, &result) == 0);
+    CHECK(result.selected);
+    CHECK(strcmp(result.selected_id, "local") == 0);
+    CHECK(strcmp(result.authoritative_psap_id, "psap-frederick") == 0);
+    CHECK(result.access_context_present);
+    CHECK(!result.access_context_valid);
+    return 0;
+}
+
+static int test_access_capability_cannot_expand_number_authority(void) {
+    itrs_asl_resource_t resources[1];
+    resources[0] = make_resource("rtt-only", "telecommunicator", "local", "US-MD-FREDERICK", "available", 100);
+    snprintf(resources[0].media, sizeof(resources[0].media), "rtt");
+
+    itrs_number_request_t req = request();
+    req.has_access_context = true;
+    req.access_context = access_context("active", "home", "registered");
+    snprintf(req.access_context.capabilities[0].name, sizeof(req.access_context.capabilities[0].name), "video");
+
+    itrs_number_result_t result;
+    CHECK(itrs_number_resolve(&req, resources, 1, &result) == 0);
+    CHECK(result.access_context_valid);
+    CHECK(!result.selected);
+    CHECK(result.candidate_count == 1);
+    CHECK(result.candidates[0].reason_mask & ITRS_REASON_MEDIA_MISMATCH);
+    CHECK(strcmp(result.authoritative_psap_id, "psap-frederick") == 0);
+    return 0;
+}
+
 int main(void) {
     int (*tests[])(void) = {
         test_local_selected,
@@ -163,11 +250,15 @@ int main(void) {
         test_malformed_resource_is_ineligible,
         test_malformed_request_fails_closed,
         test_capacity_fails_closed,
+        test_access_state_does_not_move_psap_or_selection,
+        test_malformed_access_context_is_nonfatal,
+        test_access_capability_cannot_expand_number_authority,
     };
     const char *names[] = {
         "local selected", "regional failover", "bridge failover", "deterministic input order",
         "jurisdiction eligibility", "explicit no candidate", "malformed resource rejected",
-        "malformed request rejected", "capacity fails closed"
+        "malformed request rejected", "capacity fails closed", "access state preserves authority",
+        "malformed access is nonfatal", "access cannot expand authority"
     };
     for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); ++i) {
         int rc = tests[i]();
