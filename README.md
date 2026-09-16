@@ -53,6 +53,37 @@ The local PSAP does not need to surrender the emergency call merely because the 
 - **Media/session plane** — SIP, video, RTT, voice, and multi-party session establishment.
 - **Policy + provenance** — deterministic selection with an auditable explanation of why a resource was eligible and selected.
 - **Celix runtime** — small replaceable services with dynamic discovery and a path to distributed execution.
+- **[Baudot](https://github.com/mcc0nnell/baudot) assurance plane** — external, evidence-first execution of accessible-communications behavior across SIP, RTT, WebRTC, handoff, and controlled-network seams.
+
+## Baudot assurance boundary
+
+Baudot remains an independent project rather than being vendored into iTRS NG. The split is deliberate:
+
+- **iTRS NG owns intent and authority**: numbering, capability resolution, accessibility-resource selection, routing policy, provenance, and session-join decisions.
+- **Baudot owns executable behavior and evidence**: portable scenarios, T.140/RTT semantics, SIP/RFC 4103 behavior, handoff/readiness probes, implementation oracles, packet evidence, and independent reducers.
+
+```text
+iTRS NG decision / scenario
+          │
+          ▼
+   Baudot test vocabulary
+          │
+          ▼
+SIP / RTT / video / WebRTC / network specimens
+          │
+          ▼
+   preserved observations
+          │
+          ▼
+ independent Baudot reducers
+          │
+          ▼
+ facts returned to iTRS NG / WindAnvil
+```
+
+This keeps production architecture and assurance architecture separate. iTRS NG can pin a Baudot commit for a WindAnvil campaign and consume its scenarios and evidence contracts without importing Baudot internals into the runtime.
+
+See [`docs/baudot-assurance.md`](docs/baudot-assurance.md) for the integration contract.
 
 ## First proof
 
@@ -64,7 +95,9 @@ The first concrete prototype should demonstrate deterministic failover across:
 
 while preserving the geographically authoritative PSAP throughout the call.
 
-See [`docs/architecture.md`](docs/architecture.md) and [`spec/asl-resource-resolution.md`](spec/asl-resource-resolution.md).
+Each failover arm should also be expressible as a Baudot scenario with preserved signaling/media observations and a terminal evidence reduction, so a routing decision and a usable communications path are tested as separate facts.
+
+See [`docs/architecture.md`](docs/architecture.md), [`docs/baudot-assurance.md`](docs/baudot-assurance.md), and [`spec/asl-resource-resolution.md`](spec/asl-resource-resolution.md).
 
 ## Status
 
