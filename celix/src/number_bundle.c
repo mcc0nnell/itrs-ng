@@ -1,7 +1,9 @@
 #include "itrs_number_service.h"
 #include "itrs_asl_resource_service.h"
+#include "itrs_access_identity_service.h"
 
 #include <celix_bundle_activator.h>
+#include <celix_bundle_context.h>
 #include <celix_compiler.h>
 #include <celix_constants.h>
 #include <celix_properties.h>
@@ -27,6 +29,11 @@ typedef struct activator_data {
     long number_service_id;
     itrs_number_service_t number_service;
 } activator_data_t;
+
+typedef struct access_capture {
+    bool found;
+    itrs_access_context_t context;
+} access_capture_t;
 
 static void copy_prop(char *dst, size_t size, const celix_properties_t *props, const char *key) {
     snprintf(dst, size, "%s", celix_properties_get(props, key, ""));
@@ -73,8 +80,33 @@ static void remove_resource(void *handle, void *svc CELIX_UNUSED, const celix_pr
     pthread_mutex_unlock(&data->mutex);
 }
 
+static void use_access_identity(void *handle, void *svc) {
+    access_capture_t *capture = handle;
+    itrs_access_identity_service_t *access = svc;
+    if (!access || !access->snapshot) return;
+    itrs_access_context_t context = {0};
+    if (access->snapshot(access->handle, &context) == 0) {
+        capture->context = context;
+        capture->found = true;
+    }
+}
+
 static int resolve_service(void *handle, const itrs_number_request_t *request, itrs_number_result_t *result) {
     activator_data_t *data = handle;
+    if (!request) return EINVAL;
+
+    itrs_number_request_t enriched = *request;
+    access_capture_t access = {0};
+    celix_service_use_options_t opts = CELIX_EMPTY_SERVICE_USE_OPTIONS;
+    opts.filter.serviceName = ITRS_ACCESS_IDENTITY_SERVICE_NAME;
+    opts.callbackHandle = &access;
+    opts.use = use_access_identity;
+    celix_bundleContext_useServiceWithOptions(data->ctx, &opts);
+    if (access.found) {
+        enriched.has_access_context = true;
+        enriched.access_context = access.context;
+    }
+
     itrs_asl_resource_t snapshot[ITRS_NUMBER_MAX_CANDIDATES];
     size_t count;
     bool blocked;
@@ -86,7 +118,7 @@ static int resolve_service(void *handle, const itrs_number_request_t *request, i
     }
     pthread_mutex_unlock(&data->mutex);
     if (blocked) return EOVERFLOW;
-    return itrs_number_resolve(request, snapshot, count, result);
+    return itrs_number_resolve(&enriched, snapshot, count, result);
 }
 
 static celix_status_t activator_start(activator_data_t *data, celix_bundle_context_t *ctx) {
