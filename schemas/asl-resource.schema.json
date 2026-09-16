@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "iTRS NG ASL Resource",
+  "description": "Advertisement for an ASL-capable real-time communications resource.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "endpoint", "language", "media", "role", "state", "authority"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "endpoint": {"type": "string", "minLength": 1},
+    "language": {"const": "ASL"},
+    "media": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["video", "rtt", "voice", "text"]}
+    },
+    "role": {"enum": ["telecommunicator", "interpreter", "bridge"]},
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "jurisdiction": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "state": {"enum": ["available", "busy", "unavailable", "unknown"]},
+    "dispatch_authority": {"type": "boolean"},
+    "queue": {"type": "string"},
+    "organization": {"type": "string"},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "valid_from": {"type": "string", "format": "date-time"},
+        "valid_until": {"type": "string", "format": "date-time"}
+      }
+    }
+  }
+}
