@@ -76,6 +76,10 @@ Tilden Number endpoint observation
 
 DNS transport and mutable live-zone state stay outside the deterministic core. The core accepts a frozen NAPTR snapshot so resolution can be replayed and assured independently. See [`enum-naptr.md`](enum-naptr.md).
 
+## Celix ENUM provider plane
+
+The historical iTRS ENUM seam is exposed as a dynamic Celix dependency. `org.itrsng.number` tracks the highest-ranked `org.itrsng.enum.provider`, freezes the returned NAPTR observation, and only then invokes the deterministic RFC 6116 rewrite core. The observation carries provider source, query name, timestamp, minimum TTL, and DNS AD-bit evidence. DNS and ASL-resource state use separate locks so DNS latency cannot delay accessibility-resource updates. See `docs/celix-enum-provider.md`.
+
 ## ASL emergency-resource resolution
 
 For emergency communications, Number can also resolve a service capability rather than only a subscriber destination.

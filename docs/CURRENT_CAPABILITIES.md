@@ -34,3 +34,13 @@ The repository now contains an executable M0/M1 reference slice.
 - POSIX ERE rewrite support with numeric backreferences.
 - Synthetic public-shape fixtures and executable tests.
 - DNS transport intentionally remains outside the deterministic core.
+
+## Celix ENUM provider plane
+
+- `org.itrsng.enum.provider` typed service contract.
+- highest-ranked provider tracking inside Number.
+- deterministic synthetic provider for replay/CI.
+- host-resolver DNS/NAPTR provider with bounded record parsing.
+- TTL, observation timestamp, provider source, and DNS AD-bit evidence preserved.
+- `resolveE164()` refuses framework event-loop execution with `EWOULDBLOCK`.
+- provider lookup and ASL-resource churn use separate locks.

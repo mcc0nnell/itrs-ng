@@ -42,3 +42,15 @@ cd build-celix/deploy/itrs-ng-celix-demo
 ## Before WindAnvil
 
 The worktree must be clean. Commit the candidate, record its full SHA, run local tests again from that exact commit, and only then invoke WindAnvil. Do not label a dirty-tree test run as evidence for the committed object.
+
+## ENUM provider smoke
+
+When a Celix source checkout is available, run the full validator with:
+
+```bash
+ITRS_CELIX_SOURCE_DIR=/path/to/celix ./scripts/validate.sh
+```
+
+The deterministic container packages both `celix-enum-fixture` and `celix-system-dns`; service ranking makes the fixture authoritative for the smoke. Expected output includes `ITRS_NG_ENUM_SMOKE rc=0`, the reversed `itrs.us` query name, the fixture SIP URI, TTL 60, and provider `celix-enum-fixture`.
+
+Do not call `resolveE164()` from a Celix framework event-loop callback. It returns `EWOULDBLOCK` by design because a production provider may perform blocking network resolution. Use a worker/executor context or a future asynchronous adapter.

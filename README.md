@@ -49,6 +49,7 @@ The local PSAP does not need to surrender the emergency call merely because the 
 
 - **Tilden Number** — identifier, authority, capability, reachability, policy, and provenance resolution.
 - **iTRS ENUM/NAPTR** — E.164 → `itrs.us` NAPTR → terminal `E2U+sip` resolution as a deterministic Number input.
+- **Celix ENUM provider plane** — ranked `org.itrsng.enum.provider` services for deterministic fixtures or live system DNS, frozen before Number policy is applied.
 - **ASL resource registry** — live discovery of local, regional, or fallback ASL-capable resources.
 - **NG911 integration boundary** — complements ECRF/ESRP policy; does not replace geographic emergency routing.
 - **Media/session plane** — SIP, video, RTT, voice, and multi-party session establishment.
@@ -68,6 +69,12 @@ To compile the Celix application against a pinned Apache Celix checkout:
 ```bash
 cmake -S . -B build-celix -DITRS_ENABLE_CELIX=ON -DITRS_CELIX_SOURCE_DIR=/path/to/apache-celix
 cmake --build build-celix --parallel
+```
+
+Or include the full Celix smoke in the normal validator:
+
+```bash
+ITRS_CELIX_SOURCE_DIR=/path/to/apache-celix ./scripts/validate.sh
 ```
 
 See [`docs/CURRENT_CAPABILITIES.md`](docs/CURRENT_CAPABILITIES.md), [`ROADMAP.md`](ROADMAP.md), and [`docs/windanvil.md`](docs/windanvil.md).

@@ -23,3 +23,25 @@ grep -q '^query=2\.1\.2\.1\.5\.5\.5\.1\.0\.8\.1\.itrs\.us\.$' <<<"$enum_one"
 grep -q '^uri=sip:+18015551212@providerGW\.example\.com$' <<<"$enum_one"
 [[ "$enum_one" == "$enum_two" ]]
 echo "PASS: deterministic iTRS ENUM/NAPTR rewrite and replay identity"
+
+if [[ -n "${ITRS_CELIX_SOURCE_DIR:-}" ]]; then
+    celix_build="${ITRS_CELIX_BUILD_DIR:-${build}-celix}"
+    cmake -S "$root" -B "$celix_build" \
+        -DITRS_BUILD_TESTS=ON \
+        -DITRS_ENABLE_CELIX=ON \
+        -DITRS_CELIX_SOURCE_DIR="$ITRS_CELIX_SOURCE_DIR" \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    cmake --build "$celix_build" --parallel
+    ctest --test-dir "$celix_build" --output-on-failure
+
+    deploy="$celix_build/deploy/itrs-ng-celix-demo"
+    set +e
+    celix_output="$(cd "$deploy" && timeout 4 ./itrs-ng-celix-demo 2>&1)"
+    celix_rc=$?
+    set -e
+    [[ $celix_rc -eq 0 || $celix_rc -eq 124 ]]
+    grep -q 'ITRS_NG_ENUM_EVENT_LOOP_GUARD .*pass=true' <<<"$celix_output"
+    grep -q 'ITRS_NG_CELIX_SMOKE rc=0 .*selected=asl-local' <<<"$celix_output"
+    grep -q 'ITRS_NG_ENUM_SMOKE rc=0 .*provider=celix-enum-fixture .*ttl=60' <<<"$celix_output"
+    echo "PASS: Celix Number, ASL resource plane, and ranked ENUM provider smoke"
+fi

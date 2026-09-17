@@ -4,6 +4,8 @@ The current code proves the resolution seam. It does not yet establish a full NG
 
 Highest-leverage next work:
 
+- Add TTL-aware ENUM caching, negative caching, bounded resolver timeouts, and explicit DNSSEC trust policy without moving those concerns into the deterministic core.
+
 1. Move baseline ordering into a versioned policy document loaded by Number.
 2. Add a canonical resolution-record serialization and digest for replay identity.
 3. Add an `itrs-ng.reference-suite` WindAnvil capability that compiles and runs the resolver in a pinned network-disabled cell.

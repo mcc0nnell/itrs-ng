@@ -10,6 +10,7 @@ add_library(itrs_number_core STATIC
     src/number/enum.c)
 target_include_directories(itrs_number_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_features(itrs_number_core PUBLIC c_std_11)
+set_target_properties(itrs_number_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(itrs_number_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
@@ -94,6 +95,22 @@ if (ITRS_ENABLE_CELIX)
         SOURCES celix/src/resource_fixture_bundle.c)
     target_link_libraries(itrs_resource_fixture_bundle PRIVATE itrs_number_service_api)
 
+    add_celix_bundle(itrs_enum_fixture_bundle
+        VERSION 1.0.0
+        SYMBOLIC_NAME org_itrsng_fixture_enum_provider
+        NAME "iTRS NG synthetic ENUM provider"
+        FILENAME itrs_enum_fixture
+        SOURCES celix/src/enum_fixture_bundle.c)
+    target_link_libraries(itrs_enum_fixture_bundle PRIVATE itrs_number_core itrs_number_service_api)
+
+    add_celix_bundle(itrs_enum_dns_bundle
+        VERSION 1.0.0
+        SYMBOLIC_NAME org_itrsng_enum_dns_provider
+        NAME "iTRS NG system DNS ENUM provider"
+        FILENAME itrs_enum_dns
+        SOURCES celix/src/enum_dns_bundle.c)
+    target_link_libraries(itrs_enum_dns_bundle PRIVATE itrs_number_core itrs_number_service_api resolv)
+
     add_celix_bundle(itrs_smoke_consumer_bundle
         VERSION 1.0.0
         SYMBOLIC_NAME org_itrsng_fixture_smoke_consumer
@@ -102,8 +119,21 @@ if (ITRS_ENABLE_CELIX)
         SOURCES celix/src/smoke_consumer_bundle.c)
     target_link_libraries(itrs_smoke_consumer_bundle PRIVATE itrs_number_service_api)
 
+    if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        foreach(itrs_bundle_target IN ITEMS
+                itrs_number_bundle
+                itrs_resource_fixture_bundle
+                itrs_enum_fixture_bundle
+                itrs_enum_dns_bundle
+                itrs_smoke_consumer_bundle)
+            target_compile_options(${itrs_bundle_target} PRIVATE -Wall -Wextra -Werror -Wno-unused-parameter)
+        endforeach()
+    endif()
+
     add_celix_container(itrs-ng-celix-demo COPY BUNDLES
         itrs_number_bundle
         itrs_resource_fixture_bundle
+        itrs_enum_fixture_bundle
+        itrs_enum_dns_bundle
         itrs_smoke_consumer_bundle)
 endif()
