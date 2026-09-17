@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a reproducible iTRS NG defect
+title: "bug: "
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed behavior
+      description: Include the synthetic request, resource snapshot, and policy version when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Scope check
+      options:
+        - label: This report does not contain live 911 traffic, credentials, or non-public PSAP data.
+          required: true

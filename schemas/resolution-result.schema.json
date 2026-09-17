@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://itrs-ng.example.invalid/schemas/resolution-result.schema.json",
+  "title": "iTRS NG accessibility resolution result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["request_id", "authoritative_psap", "resource_snapshot", "policy_version", "selected", "candidates"],
+  "properties": {
+    "request_id": {"type": "string"},
+    "authoritative_psap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "endpoint"],
+      "properties": {"id": {"type": "string"}, "endpoint": {"type": "string"}}
+    },
+    "resource_snapshot": {"type": "string"},
+    "policy_version": {"type": "string"},
+    "selected": {"type": ["string", "null"]},
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "eligible", "class_rank", "priority", "reasons"],
+        "properties": {
+          "id": {"type": "string"},
+          "eligible": {"type": "boolean"},
+          "class_rank": {"type": "integer"},
+          "priority": {"type": "integer"},
+          "reasons": {"type": "array", "items": {"type": "string"}},
+          "authority_source": {"type": "string"},
+          "authority_version": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose an interoperability, accessibility, or assurance capability
+title: "feat: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What interoperability or accessibility gap does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Authority boundary
+      description: Explain which component owns the decision and which components only supply data/capabilities.
+    validations:
+      required: true
+  - type: textarea
+    id: proof
+    attributes:
+      label: Executable proof
+      description: What deterministic test or WindAnvil evidence would demonstrate the feature?
+    validations:
+      required: true
