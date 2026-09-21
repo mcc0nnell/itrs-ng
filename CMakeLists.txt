@@ -16,7 +16,8 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 add_library(itrs_edge_core STATIC
-    src/edge/edge.c)
+    src/edge/edge.c
+    src/accessibility/vector.c)
 target_include_directories(itrs_edge_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_features(itrs_edge_core PUBLIC c_std_11)
 target_link_libraries(itrs_edge_core PUBLIC itrs_number_core)
@@ -52,6 +53,13 @@ if (ITRS_BUILD_TESTS)
         target_compile_options(itrs-edge-test PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
     add_test(NAME edge-core COMMAND itrs-edge-test)
+
+    add_executable(itrs-a11y-vector-test tests/accessibility_vector_test.c)
+    target_link_libraries(itrs-a11y-vector-test PRIVATE itrs_edge_core)
+    if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(itrs-a11y-vector-test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    add_test(NAME a11y-vector COMMAND itrs-a11y-vector-test)
 endif()
 
 if (ITRS_ENABLE_CELIX)

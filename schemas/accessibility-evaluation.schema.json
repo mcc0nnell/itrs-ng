@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcc0nnell.org/schemas/itrs-ng/accessibility-evaluation.schema.json",
+  "title": "iTRS NG A11YV accessibility evaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scheme", "version", "vector", "metrics", "score", "severity", "modalities", "requirements", "evidence", "note"],
+  "properties": {
+    "scheme": {"const": "A11YV"},
+    "version": {"const": "1.0"},
+    "vector": {"type": "string", "pattern": "^A11YV:1\\.0/(?:BL|TC|ALT|FQ|PS|AU):[A-Z](?:/(?:BL|TC|ALT|FQ|PS|AU):[A-Z]){5}$"},
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["BL", "TC", "ALT", "FQ", "PS", "AU"],
+      "properties": {
+        "BL": {"enum": ["N", "F", "P", "T"]},
+        "TC": {"enum": ["A", "S", "C", "E"]},
+        "ALT": {"enum": ["E", "D", "R", "N"]},
+        "FQ": {"enum": ["R", "C", "F", "A"]},
+        "PS": {"enum": ["M", "I", "S", "P"]},
+        "AU": {"enum": ["N", "R", "D", "I"]}
+      }
+    },
+    "score": {"type": "number", "minimum": 0, "maximum": 10, "multipleOf": 0.1},
+    "severity": {"enum": ["none", "low", "medium", "high", "critical"]},
+    "modalities": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wcagCriteria"],
+      "properties": {"wcagCriteria": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kernel", "vectorSha256"],
+      "properties": {
+        "kernel": {"const": "itrs-edge-wasm-v1"},
+        "vectorSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "note": {"const": "remediation-priority-not-wcag-conformance"}
+  }
+}

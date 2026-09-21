@@ -1,4 +1,5 @@
 #include "itrsng/edge.h"
+#include "itrsng/accessibility.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -8,6 +9,7 @@
 static uint8_t input_buffer[ITRS_EDGE_PAYLOAD_MAX];
 static uint8_t output_buffer[ITRS_EDGE_WASM_OUTPUT_MAX];
 static size_t last_output_len;
+static itrs_a11y_score_t last_a11y_score;
 
 uint32_t itrs_edge_wasm_input_ptr(void) {
     return (uint32_t)(uintptr_t)input_buffer;
@@ -47,4 +49,16 @@ int32_t itrs_edge_wasm_resume(uint32_t input_len) {
                             output_buffer,
                             ITRS_EDGE_WASM_OUTPUT_MAX,
                             &last_output_len);
+}
+
+int32_t itrs_accessibility_wasm_score(uint32_t input_len) {
+    if (input_len == 0u || input_len >= ITRS_EDGE_PAYLOAD_MAX) return -1;
+    input_buffer[input_len] = '\0';
+    int rc = itrs_a11y_score_vector((const char *)input_buffer, &last_a11y_score);
+    if (rc != 0) return -rc;
+    return (int32_t)last_a11y_score.score_tenths;
+}
+
+int32_t itrs_accessibility_wasm_severity(void) {
+    return (int32_t)last_a11y_score.severity;
 }

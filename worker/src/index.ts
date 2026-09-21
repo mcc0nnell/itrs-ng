@@ -2,7 +2,7 @@ import {McpServer} from "@modelcontextprotocol/server";
 import {createMcpHandler} from "agents/mcp/server";
 import {z} from "zod";
 
-import {listSyntheticCapabilities, resolveAccessibility} from "./edge";
+import {evaluateAccessibility, listSyntheticCapabilities, resolveAccessibility} from "./edge";
 
 function createServer(): McpServer {
   const server = new McpServer({
@@ -28,6 +28,36 @@ function createServer(): McpServer {
           },
         ],
         structuredContent: {capabilities},
+      };
+    },
+  );
+
+  server.registerTool(
+    "evaluate_accessibility",
+    {
+      description:
+        "Evaluate an A11YV 1.0 machine-readable accessibility impact vector in the freestanding Wasm kernel. " +
+        "The 0.0-10.0 result is remediation priority, not a WCAG conformance score.",
+      inputSchema: {
+        vector: z.string().min(1).max(255),
+        modalities: z.array(z.string().min(1).max(63)).max(16).optional(),
+        wcagCriteria: z.array(z.string().min(1).max(31)).max(32).optional(),
+      },
+    },
+    async (input) => {
+      const evaluation = await evaluateAccessibility(
+        input.vector,
+        input.modalities,
+        input.wcagCriteria,
+      );
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `A11YV ${evaluation.score.toFixed(1)} ${evaluation.severity.toUpperCase()}; this is remediation priority, not WCAG conformance.`,
+          },
+        ],
+        structuredContent: evaluation,
       };
     },
   );
