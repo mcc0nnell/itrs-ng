@@ -1,0 +1,72 @@
+{
+  "specimen": "itrs-ng/wasm-sip-twitch",
+  "sipx_commit": "cb71afd95a0fe2bf7405b45285cae17a2195b4d4",
+  "wasm": {
+    "bytes": 330380,
+    "sha256": "b3026d1097807dbfcf27b521d27341aafbdc4408a90d407a690bcd4e8f22dedf",
+    "imports": [],
+    "abi_version": 1
+  },
+  "twitch": {
+    "input": "REGISTER -> 401 -> authenticated REGISTER -> 200",
+    "first_wire_sha256": "ca5602bfc118bb50f0482e499844166f7665cbe0e8ded91615d266e6b1f5824d",
+    "retry_wire_sha256": "af20ffac8885ce8b98ad0d76605437e79fcea2cb3665e91bcaf339ffde3ec0d6",
+    "request_line": "REGISTER sip:example.net SIP/2.0",
+    "authenticated_retry": true,
+    "digest_algorithm": "SHA-256",
+    "credential_on_wire": false
+  },
+  "events": [
+    {
+      "v": 1,
+      "evt": "registration",
+      "state": "registering",
+      "expires": 600
+    },
+    {
+      "v": 1,
+      "evt": "registration",
+      "state": "registering",
+      "expires": 600
+    },
+    {
+      "v": 1,
+      "evt": "registration",
+      "state": "registered",
+      "expires": 600
+    },
+    {
+      "v": 1,
+      "evt": "outcome",
+      "id": 1,
+      "ok": true
+    }
+  ],
+  "final_snapshot": {
+    "v": 1,
+    "registration": "registered",
+    "calls": {},
+    "entropy": 200,
+    "pendingTimers": 3,
+    "queuedOutputs": 0,
+    "counters": {
+      "parse_errors": 0,
+      "stale_timer_fires": 0,
+      "refused_incoming": 0,
+      "dropped_after_close": 0,
+      "invalid-handle": 0,
+      "bad-pointer": 0,
+      "utf8": 0,
+      "json": 0,
+      "schema": 0,
+      "state": 0,
+      "bounds": 0,
+      "entropy": 0,
+      "oom": 0,
+      "limit": 0,
+      "time": 0,
+      "poisoned": 0
+    },
+    "poisoned": false
+  }
+}
