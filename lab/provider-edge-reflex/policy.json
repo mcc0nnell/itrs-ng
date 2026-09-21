@@ -1,0 +1,10 @@
+{
+  "version": "provider-edge-v0",
+  "principles": [
+    "resolve-capability-before-provider",
+    "prefer-direct-when-endpoint-satisfies-request",
+    "attach-interpreter-only-for-capability-gap",
+    "preserve-ng911-authority",
+    "deterministic-resource-ordering"
+  ]
+}
