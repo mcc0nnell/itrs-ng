@@ -85,11 +85,14 @@ function evaluateResources(resources, request) {
   }).sort((a, b) => a.score - b.score || a.resource.id.localeCompare(b.resource.id));
 }
 
-function finalize(decision, request, policy) {
+function finalize(decision, inputs, policy) {
   const evidence = {
     resolver: 'itrs-edge-reflex',
     policy_version: policy.version,
-    input_digest: sha256({ request, policy_version: policy.version }),
+    policy_digest: sha256(policy),
+    binding_digest: sha256(inputs.binding),
+    resource_state_digest: sha256(inputs.resources),
+    input_digest: sha256({ ...inputs, policy }),
   };
   const withoutDigest = { ...decision, evidence };
   evidence.decision_digest = sha256(withoutDigest);
@@ -112,7 +115,7 @@ export function resolveEdge({ request, binding, resources = [], policy }) {
       ],
       candidates: [{ id: direct.uri, kind: 'endpoint', eligible: true, reasons: ['capability-match', 'direct-preferred'] }],
       authority: { numbering: binding.authority ?? null },
-    }, request, policy);
+    }, { request, binding, resources }, policy);
   }
 
   const evaluated = evaluateResources(resources, request);
@@ -127,7 +130,7 @@ export function resolveEdge({ request, binding, resources = [], policy }) {
       authority: request.emergency
         ? { psap: request.authoritative_psap, numbering: binding.authority ?? null }
         : { numbering: binding.authority ?? null },
-    }, request, policy);
+    }, { request, binding, resources }, policy);
   }
 
   const resource = selected.resource;
@@ -152,5 +155,5 @@ export function resolveEdge({ request, binding, resources = [], policy }) {
     authority: request.emergency
       ? { psap: request.authoritative_psap, numbering: binding.authority ?? null }
       : { numbering: binding.authority ?? null },
-  }, request, policy);
+  }, { request, binding, resources }, policy);
 }
