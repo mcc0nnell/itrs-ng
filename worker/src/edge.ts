@@ -10,6 +10,8 @@ interface EdgeWasmExports {
   itrs_edge_wasm_output_len(): number;
   itrs_edge_wasm_step(inputLength: number): number;
   itrs_edge_wasm_resume(inputLength: number): number;
+  itrs_accessibility_wasm_score(inputLength: number): number;
+  itrs_accessibility_wasm_severity(): number;
 }
 
 export interface ResolveAccessibilityInput {
@@ -21,6 +23,24 @@ export interface ResolveAccessibilityInput {
   authoritativePsapId: string;
   authoritativePsapEndpoint: string;
   unavailableResources?: string[];
+}
+
+export interface AccessibilityEvaluation {
+  scheme: "A11YV";
+  version: "1.0";
+  vector: string;
+  metrics: Record<string, string>;
+  score: number;
+  severity: "none" | "low" | "medium" | "high" | "critical";
+  modalities: string[];
+  requirements: {
+    wcagCriteria: string[];
+  };
+  evidence: {
+    kernel: "itrs-edge-wasm-v1";
+    vectorSha256: string;
+  };
+  note: "remediation-priority-not-wcag-conformance";
 }
 
 export interface CapabilityCandidate {
@@ -80,6 +100,57 @@ function asNumber(value: WireValue, label: string): number {
 function asBoolean(value: WireValue, label: string): boolean {
   if (typeof value !== "boolean") throw new Error(`${label} is not a boolean`);
   return value;
+}
+
+function parseA11yvMetrics(vector: string): Record<string, string> {
+  const prefix = "A11YV:1.0/";
+  if (!vector.startsWith(prefix)) return {};
+  return Object.fromEntries(
+    vector.slice(prefix.length).split("/").map((metric) => {
+      const [name, value] = metric.split(":");
+      return [name, value];
+    }),
+  );
+}
+
+export async function evaluateAccessibility(
+  vector: string,
+  modalities: string[] = [],
+  wcagCriteria: string[] = [],
+): Promise<AccessibilityEvaluation> {
+  const kernel = await instantiateKernel();
+  const bytes = new TextEncoder().encode(vector);
+  if (bytes.length === 0 || bytes.length >= kernel.itrs_edge_wasm_input_capacity()) {
+    throw new RangeError("A11YV vector exceeds Wasm input capacity");
+  }
+
+  const inputPtr = kernel.itrs_edge_wasm_input_ptr();
+  new Uint8Array(kernel.memory.buffer, inputPtr, bytes.length).set(bytes);
+  const scoreTenths = kernel.itrs_accessibility_wasm_score(bytes.length);
+  if (scoreTenths < 0) throw new Error(`invalid A11YV vector (rc=${scoreTenths})`);
+
+  const severityCode = kernel.itrs_accessibility_wasm_severity();
+  const severities = ["none", "low", "medium", "high", "critical"] as const;
+  const severity = severities[severityCode];
+  if (!severity) throw new Error(`invalid A11YV severity code: ${severityCode}`);
+
+  return {
+    scheme: "A11YV",
+    version: "1.0",
+    vector,
+    metrics: parseA11yvMetrics(vector),
+    score: scoreTenths / 10,
+    severity,
+    modalities: [...new Set(modalities)].sort(),
+    requirements: {
+      wcagCriteria: [...new Set(wcagCriteria)].sort(),
+    },
+    evidence: {
+      kernel: "itrs-edge-wasm-v1",
+      vectorSha256: await sha256(bytes),
+    },
+    note: "remediation-priority-not-wcag-conformance",
+  };
 }
 
 function syntheticResources(unavailable: Set<string>): WireValue[][] {

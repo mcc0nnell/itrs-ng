@@ -27,9 +27,10 @@ cflags=(
 
 "${clang_bin}" "${cflags[@]}" -c "${repo_root}/src/edge/edge.c" -o "${build_dir}/edge.o"
 "${clang_bin}" "${cflags[@]}" -c "${repo_root}/src/number/resolver.c" -o "${build_dir}/resolver.o"
+"${clang_bin}" "${cflags[@]}" -c "${repo_root}/src/accessibility/vector.c" -o "${build_dir}/accessibility.o"
 "${clang_bin}" "${cflags[@]}" -c "${repo_root}/wasm/src/freestanding.c" -o "${build_dir}/freestanding.o"
 "${clang_bin}" "${cflags[@]}" -c "${repo_root}/wasm/src/edge_wasm.c" -o "${build_dir}/edge_wasm.o"
 
-"${wasm_ld_bin}"   --no-entry   --gc-sections   --strip-all   --export-memory   --initial-memory=262144   --max-memory=1048576   --export=itrs_edge_wasm_input_ptr   --export=itrs_edge_wasm_input_capacity   --export=itrs_edge_wasm_output_ptr   --export=itrs_edge_wasm_output_capacity   --export=itrs_edge_wasm_output_len   --export=itrs_edge_wasm_step   --export=itrs_edge_wasm_resume   "${build_dir}/edge.o"   "${build_dir}/resolver.o"   "${build_dir}/freestanding.o"   "${build_dir}/edge_wasm.o"   -o "${build_dir}/itrs_edge.wasm"
+"${wasm_ld_bin}"   --no-entry   --gc-sections   --strip-all   --export-memory   --initial-memory=262144   --max-memory=1048576   --export=itrs_edge_wasm_input_ptr   --export=itrs_edge_wasm_input_capacity   --export=itrs_edge_wasm_output_ptr   --export=itrs_edge_wasm_output_capacity   --export=itrs_edge_wasm_output_len   --export=itrs_edge_wasm_step   --export=itrs_edge_wasm_resume   --export=itrs_accessibility_wasm_score   --export=itrs_accessibility_wasm_severity   "${build_dir}/edge.o"   "${build_dir}/resolver.o"   "${build_dir}/accessibility.o"   "${build_dir}/freestanding.o"   "${build_dir}/edge_wasm.o"   -o "${build_dir}/itrs_edge.wasm"
 
 printf 'built %s\n' "${build_dir}/itrs_edge.wasm"

@@ -209,5 +209,11 @@ const failover = decode(run("itrs_edge_wasm_resume", [1, 2, request, [localDown,
 assert.equal(failover[2][1], "psap-frederick");
 assert.equal(failover[2][6], "asl-regional");
 
+const vector = "A11YV:1.0/BL:T/TC:C/ALT:N/FQ:A/PS:P/AU:I";
+const vectorBytes = new TextEncoder().encode(vector);
+new Uint8Array(e.memory.buffer, e.itrs_edge_wasm_input_ptr(), vectorBytes.length).set(vectorBytes);
+assert.equal(e.itrs_accessibility_wasm_score(vectorBytes.length), 95);
+assert.equal(e.itrs_accessibility_wasm_severity(), 4);
+
 console.log("itrs-edge-wasm-test: ok");
 console.log(`module_bytes=${wasm.length} imports=${WebAssembly.Module.imports(module).length}`);

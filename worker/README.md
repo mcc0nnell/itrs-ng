@@ -36,6 +36,18 @@ The Wasm module has zero imports. It cannot fetch, read a clock, obtain entropy,
 
 Returns the synthetic communication resources visible to the MVP capability plane.
 
+### evaluate_accessibility
+
+Runs an A11YV 1.0 vector through the same freestanding Wasm kernel and returns a 0.0–10.0 remediation-priority score, severity band, parsed metrics, optional WCAG criterion references, and a SHA-256 evidence digest. The score is explicitly not a WCAG conformance percentage.
+
+Example:
+
+~~~text
+A11YV:1.0/BL:T/TC:C/ALT:N/FQ:A/PS:P/AU:I
+~~~
+
+This evaluates to 9.5 / critical.
+
 ### resolve_accessible_communication
 
 Resolves an accessibility resource from a frozen snapshot while preserving the authoritative PSAP supplied to the kernel.
