@@ -131,6 +131,15 @@ A Worker-facing Wasm shim can be extremely small: copy canonical MessagePack int
 
 That keeps Cloudflare-specific code outside the reference semantics and allows the exact same kernel to run natively in tests, in a Wasm Worker, or under independent WindAnvil replay.
 
+The reference Wasm build is freestanding rather than WASI-hosted. Run:
+
+~~~sh
+./scripts/build-edge-wasm.sh
+node wasm/test.mjs
+~~~
+
+The resulting module exports only linear memory and the iTRS Edge buffer/step/resume ABI. It has **zero imports**: no WASI, clocks, sockets, filesystem, entropy, or Cloudflare-specific host functions. The Wasm test exercises the same effect, deterministic ordering, PSAP invariant, and local-to-regional failover as the native test.
+
 ## Next effects
 
 The MVP starts with one effect:
