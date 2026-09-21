@@ -15,6 +15,15 @@ if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(itrs_number_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+add_library(itrs_edge_core STATIC
+    src/edge/edge.c)
+target_include_directories(itrs_edge_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_features(itrs_edge_core PUBLIC c_std_11)
+target_link_libraries(itrs_edge_core PUBLIC itrs_number_core)
+if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(itrs_edge_core PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(itrs-number-demo examples/number_demo.c)
 target_link_libraries(itrs-number-demo PRIVATE itrs_number_core)
 
@@ -36,6 +45,13 @@ if (ITRS_BUILD_TESTS)
         target_compile_options(itrs-enum-test PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
     add_test(NAME enum-core COMMAND itrs-enum-test)
+
+    add_executable(itrs-edge-test tests/edge_test.c)
+    target_link_libraries(itrs-edge-test PRIVATE itrs_edge_core)
+    if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(itrs-edge-test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+    add_test(NAME edge-core COMMAND itrs-edge-test)
 endif()
 
 if (ITRS_ENABLE_CELIX)
