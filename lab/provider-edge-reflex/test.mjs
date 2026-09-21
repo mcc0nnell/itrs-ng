@@ -61,6 +61,8 @@ const fallback = resolveEdge({
   policy,
 });
 assert.equal(fallback.selected.id, 'vrs-b');
+assert.notEqual(fallback.evidence.input_digest, interpreted.evidence.input_digest, 'resource-state change must change the input digest');
+assert.notEqual(fallback.evidence.decision_digest, interpreted.evidence.decision_digest, 'resource-state change must change the decision digest');
 
 const emergencyRequest = {
   target: voiceBinding.identifier,
