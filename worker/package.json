@@ -1,0 +1,22 @@
+{
+  "name": "itrs-edge-mcp-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:wasm": "mkdir -p src/generated && ../scripts/build-edge-wasm.sh && cp ../build-wasm/itrs_edge.wasm src/generated/itrs_edge.wasm",
+    "check": "npm run build:wasm && tsc --noEmit",
+    "build": "npm run check && wrangler deploy --dry-run --outdir dist",
+    "dev": "npm run build:wasm && wrangler dev",
+    "deploy": "npm run build:wasm && wrangler deploy"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "agents": "0.24.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260921.1",
+    "typescript": "7.0.2",
+    "wrangler": "4.135.0"
+  }
+}
