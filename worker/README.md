@@ -30,6 +30,8 @@ result + SHA-256 evidence
 
 The Wasm module has zero imports. It cannot fetch, read a clock, obtain entropy, use a filesystem, open a socket, or call a Cloudflare API. The Worker owns those effects.
 
+The Worker also exposes the two resolution operations as Cloudflare RPC methods. This lets another Worker call the same pure-Wasm decision service through a service binding without creating another public HTTP API. `../worker-python` uses that seam to host MCP in Python while leaving the deterministic kernel here.
+
 ## Current tools
 
 ### discover_communication_capabilities

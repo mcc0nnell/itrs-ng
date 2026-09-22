@@ -1,8 +1,14 @@
 import {McpServer} from "@modelcontextprotocol/server";
 import {createMcpHandler} from "agents/mcp/server";
+import {WorkerEntrypoint} from "cloudflare:workers";
 import {z} from "zod";
 
-import {listSyntheticCapabilities, resolveAccessibility} from "./edge";
+import {
+  listSyntheticCapabilities,
+  resolveAccessibility,
+  type EdgeResolution,
+  type ResolveAccessibilityInput,
+} from "./edge";
 
 function createServer(): McpServer {
   const server = new McpServer({
@@ -75,17 +81,28 @@ function createServer(): McpServer {
 
 const mcp = createMcpHandler(createServer);
 
-export default {
-  async fetch(request: Request, env: unknown, ctx: ExecutionContext): Promise<Response> {
+export default class EdgeWorker extends WorkerEntrypoint {
+  discover_communication_capabilities(): {capabilities: ReturnType<typeof listSyntheticCapabilities>} {
+    return {capabilities: listSyntheticCapabilities()};
+  }
+
+  async resolve_accessible_communication(
+    input: ResolveAccessibilityInput,
+  ): Promise<EdgeResolution> {
+    return resolveAccessibility(input);
+  }
+
+  async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
       return Response.json({
         service: "iTRS Edge",
         mcp: "/mcp",
+        rpc: ["discover_communication_capabilities", "resolve_accessible_communication"],
         kernel: "freestanding-wasm",
         wire: "canonical-messagepack-v1",
       });
     }
-    return mcp(request, env, ctx);
-  },
-};
+    return mcp(request, this.env, this.ctx);
+  }
+}

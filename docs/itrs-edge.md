@@ -140,6 +140,12 @@ node wasm/test.mjs
 
 The resulting module exports only linear memory and the iTRS Edge buffer/step/resume ABI. It has **zero imports**: no WASI, clocks, sockets, filesystem, entropy, or Cloudflare-specific host functions. The Wasm test exercises the same effect, deterministic ordering, PSAP invariant, and local-to-regional failover as the native test.
 
+## Cloudflare host boundary
+
+The TypeScript Worker exposes the same resolution operations over Cloudflare RPC in addition to MCP. A Python Worker can therefore host the Python `mcp` package and use Cloudflare's Python networking/runtime surface while delegating the deterministic decision to the existing zero-import Wasm service through an internal service binding.
+
+This is deliberate: HTTP, TCP, WebRTC, database drivers, and AI orchestration are host capabilities. They may satisfy explicit effects, but they do not become imports of the replayable kernel. `worker-python/` is the reference cross-language host for this split.
+
 ## Next effects
 
 The MVP starts with one effect:
